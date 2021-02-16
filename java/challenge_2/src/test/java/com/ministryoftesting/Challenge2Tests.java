@@ -1,5 +1,7 @@
 package com.ministryoftesting;
 
+import BaseTest.BaseTest;
+import Pages.*;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -12,6 +14,8 @@ import java.util.List;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
 
 //    Welcome to UI Automation Challenge 2
 //
@@ -21,7 +25,7 @@ import static org.junit.Assert.assertThat;
 //    data. You might want to research different approaches to improving UI automation such as
 //    Page Object Models and implicit vs. explicit waits
 
-public class Challenge2Tests {
+public class Challenge2Tests extends BaseTest {
 
 //  Test one: Check to see if you can log in with valid credentials
     @Test
@@ -30,22 +34,19 @@ public class Challenge2Tests {
         WebDriver driver = new ChromeDriver();
 
         driver.navigate().to("https://automationintesting.online/#/");
-        driver.findElement(By.cssSelector("footer p a:nth-child(5)")).click();
-    Thread.sleep(1000);
-        driver.findElement(By.xpath("//div[@class=\"form-group\"][1]/input")).sendKeys("admin");
-        Thread.sleep(1000);
-        driver.findElement(By.xpath("//div[@class=\"form-group\"][2]/input")).sendKeys("password");
-        Thread.sleep(1000);
-        driver.findElement(By.className("float-right")).click();
 
+        //Creating object of home page
+        HomePage home = new HomePage(driver);
 
-        Thread.sleep(5000);
+        //Creating object of Admin page
+        AdminPage adminPage = new AdminPage(driver);
 
-    WebElement webElement = driver.findElement(By.className("navbar-collapse"));
-    System.out.println(webElement.getText());
-    Boolean title = webElement.getText().contains("Rooms");
+        //Login to the Admin Panel
+        home.clickLogin("admin","password");
 
-        assertThat(true, is(title));
+        //Check the title
+        assertTrue(adminPage.checkText("Rooms"));
+
     }
 
 //  Test two: Check to see if rooms are saved and displayed in the UI
@@ -55,26 +56,21 @@ public class Challenge2Tests {
         WebDriver driver = new ChromeDriver();
 
         driver.navigate().to("https://automationintesting.online/#/");
-        driver.findElement(By.xpath("//a[@href=\"/#/admin\"]")).click();
 
-        Thread.sleep(3600);
+        //Creating object of home page
+        HomePage home = new HomePage(driver);
 
-        driver.findElement(By.xpath("//div[@class=\"form-group\"][1]/input")).sendKeys("admin");
-        Thread.sleep(1000);
-        driver.findElement(By.xpath("//div[@class=\"form-group\"][2]/input")).sendKeys("password");
-        Thread.sleep(1000);
-        driver.findElement(By.className("float-right")).click();
+        //Creating object of Admin page
+        AdminPage adminPage = new AdminPage(driver);
 
-        Thread.sleep(2000);
+        //Login to the Admin Panel
+        home.clickLogin("admin","password");
 
-        driver.findElement(By.cssSelector(".room-form > div:nth-child(1) input")).sendKeys("101");
-        driver.findElement(By.cssSelector(".room-form > div:nth-child(4) input")).sendKeys("101");
-        Thread.sleep(1000);
-        driver.findElement(By.className("btn-outline-primary")).click();
+        //Create Rool
+        adminPage.createRoom("101","101");
 
-        Thread.sleep(5000);
-
-        assertThat(driver.findElements(By.className(".detail")).size(), not(1));
+        //Check the creation
+        assertTrue(adminPage.checkCreation());
     }
 
 //  Test three: Check to see the confirm message appears when branding is updated
@@ -85,28 +81,24 @@ public class Challenge2Tests {
 
         driver.get("https://automationintesting.online/#/admin");
 
-        driver.findElement(By.xpath("//div[@class=\"form-group\"][1]/input")).sendKeys("admin");
-        Thread.sleep(1000);
-        driver.findElement(By.xpath("//div[@class=\"form-group\"][2]/input")).sendKeys("password");
-        Thread.sleep(1000);
-        driver.findElement(By.className("float-right")).click();
+        //Creating object of home page
+        HomePage home = new HomePage(driver);
+
+        //Creating object of Admin page
+        AdminPage adminPage = new AdminPage(driver);
+
+        //Creating object of Branding page
+        BrandingPage brandingPage = new BrandingPage(driver);
+
+        //Login to the Admin Panel
+        home.clickLogin("admin","password");
 
         driver.get("https://automationintesting.online/#/admin/branding");
 
-        Thread.sleep(5000);
+        brandingPage.enterFormValue("test");
 
-        driver.findElement(By.className("form-control")).sendKeys("Test");
-        driver.findElement(By.className("btn-outline-primary")).click();
-
-        Thread.sleep(1001);
-
-        int count = driver.findElements(By.xpath("//button[text()=\"Close\"]")).size();
-
-        if(count == 1){
-            assertThat(true, is(true));
-        } else {
-            assertThat(true, is(Boolean.FALSE));
-        }
+        //Check the creation
+        assertTrue(brandingPage.checkCreation());
     }
 
     WebDriver driver;
@@ -119,18 +111,16 @@ public class Challenge2Tests {
 
         driver.navigate().to("https://automationintesting.online");
 
-        driver.findElement(By.cssSelector("input[placeholder=\"Name\"]")).sendKeys("TEST123");
-        driver.findElement(By.cssSelector("input[placeholder=\"Email\"]")).sendKeys("TEST123@TEST.COM");
-        driver.findElement(By.cssSelector("input[placeholder=\"Phone\"]")).sendKeys("01212121311");
-        driver.findElement(By.cssSelector("input[placeholder=\"Subject\"]")).sendKeys("TEsTEST");
-        driver.findElement(By.cssSelector("textarea")).sendKeys("TEsTESTTEsTESTTEsTEST");
-        Thread.sleep(2000);
-        driver.findElement(By.xpath("//button[text()=\"Submit\"]")).click();
 
+        //Creating object of Contact page
+        ContactFormPage contactFormPage = new ContactFormPage(driver);
 
-        Thread.sleep(4000);
-        assertThat(driver.findElement(By.cssSelector(".contact")).getText().contains("Thanks for getting in touch"), is(true));
-}
+        //Fill in form and Submit
+        contactFormPage.fillContactForm("Test userName", "test@test.com", "1234567894242", "This is a test email", "This is a long text a very long text");
+
+        //Check if the message is present
+        assertTrue(contactFormPage.checkConfirmation("Thanks for getting in touch"));
+    }
 
 //  Test five: Check to see if unread messages are bolded
     @Test
@@ -140,26 +130,19 @@ public class Challenge2Tests {
 
         driver.navigate().to("https://automationintesting.online/#/admin/messages");
 
-        driver.findElement(By.xpath("//div[@class=\"form-group\"][1]/input")).sendKeys("admin");
-        Thread.sleep(1000);
-        driver.findElement(By.xpath("//div[@class=\"form-group\"][2]/input")).sendKeys("password");
-        Thread.sleep(1000);
-        driver.findElement(By.className("float-right")).click();
+        //Creating object of home page
+        HomePage home = new HomePage(driver);
 
-        Thread.sleep(3000);
+        //Creating object of AdminMessagePage page
+        AdminMessagesPage adminMessagePage = new AdminMessagesPage(driver);
 
+        home.clickLogin("admin","password");
 
+        driver.navigate().to("https://automationintesting.online/#/admin/messages");
 
-
-
-        assertThat(checkCount(driver.findElements(By.cssSelector(".read-false"))), is(true));
+        //Check that there are more than 1 unread messages
+        assertTrue(adminMessagePage.checkMessageList(1));
     }
 
-    private Boolean checkCount(List<WebElement> elements) {
-        if(elements.size() >= 1){
-            return true;
-        }
 
-        return false;
-    }
 }
